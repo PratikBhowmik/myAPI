@@ -17,7 +17,7 @@ app.get('/api', (req, res) => {
 });
 
 // Sample POST API
-app.post('/api/user', (req, res) => {
+app.post('/api/users', (req, res) => {
     const { username, designation } = req.body;
 
     if (!username || !designation) {
@@ -42,8 +42,47 @@ app.post('/api/user', (req, res) => {
         message: "User created successfully",
         user: users[newID]
     });
-
 });
+
+//PUT request
+app.put('/api/users/:id', (req, res) => {
+    const userId = req.params.id;
+    const { username, designation } = req.body;
+
+    if (!users[userId]) {
+        return res.status(400).send({
+            error: "User not found"
+        });
+    }
+
+    if (!username || !designation) {
+        return res.status(400).send({
+            error: "User name and designation are required"
+        })
+    }
+
+    if (username) users[userId].username = username;
+    if (designation) users[userId].designation = designation;
+
+    users[userId] = { username, designation };
+
+    res.status(200).send({
+        message: "User updated successfully"
+    })
+})
+
+//DELETE request
+app.delete('/api/users/:id', (req, res) => {
+    const userId = req.params.id;
+
+    if (!users[userId]) {
+        return res.status(400).send({ error: "user not found" });
+    }
+
+    delete users[userId];
+    res.status(200).send({ message: "user deleted successfully" });
+})
+
 
 // Server listening
 app.listen(port, () => {
