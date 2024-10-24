@@ -7,7 +7,7 @@ const connection = require('./db');
 // Middleware to parse JSON
 app.use(express.json());
 
-// Sample GET API to fetch all the users
+// GET request to fetch all the users
 app.get('/api', (req, res) => {
     const query = 'SELECT * FROM users';
 
@@ -19,7 +19,7 @@ app.get('/api', (req, res) => {
     })
 });
 
-// Sample POST API to create new user
+// POST request to create new user
 app.post('/api/users', (req, res) => {
     const { username, designation } = req.body;
 
@@ -39,7 +39,7 @@ app.post('/api/users', (req, res) => {
     })
 });
 
-//PUT request to update user
+// PUT request to update user
 app.put('/api/users/:id', (req, res) => {
     const { username, designation } = req.body;
     const { id } = req.params;
@@ -63,7 +63,7 @@ app.put('/api/users/:id', (req, res) => {
     })
 })
 
-//DELETE request to delete user
+// DELETE request to delete user
 app.delete('/api/users/:id', (req, res) => {
     const { id } = req.params;
 
