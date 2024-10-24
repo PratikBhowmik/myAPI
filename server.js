@@ -9,7 +9,9 @@ app.use(express.json());
 
 // Sample GET API to fetch all the users
 app.get('/api', (req, res) => {
-    connection.query('SELECT * FROM users', (err, results) => {
+    const query = 'SELECT * FROM users';
+
+    connection.query(query, (err, results) => {
         if (err) {
             return res.status(500).send({ error: 'Database error' });
         }
@@ -27,7 +29,9 @@ app.post('/api/users', (req, res) => {
         });
     }
 
-    connection.query('INSERT INTO users (id,username,designation) VALUES (5,"Shamik Barman","Product Manager")', [username, designation], (err) => {
+    const query = 'INSERT INTO users (username, designation) VALUES (?, ?)';
+
+    connection.query(query, [username, designation], (err) => {
         if (err) {
             return res.status(500).send({ error: 'Database error' });
         }
@@ -35,42 +39,45 @@ app.post('/api/users', (req, res) => {
     })
 });
 
-//PUT request to update any user
+//PUT request to update user
 app.put('/api/users/:id', (req, res) => {
     const { username, designation } = req.body;
-
-    if (!users[userId]) {
-        return res.status(400).send({
-            error: "User not found"
-        });
-    }
+    const { id } = req.params;
 
     if (!username || !designation) {
         return res.status(400).send({
             error: "User name and designation are required"
-        })
+        });
     }
 
-    if (username) users[userId].username = username;
-    if (designation) users[userId].designation = designation;
+    const query = 'UPDATE users SET username = ?,designation = ? WHERE id = ?';
 
-    users[userId] = { username, designation };
-
-    res.status(200).send({
-        message: "User updated successfully"
+    connection.query(query, [username, designation, id], (err, result) => {
+        if (err) {
+            return res.status(500).send({ error: 'Database error' });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).send({ error: 'User not found' });
+        }
+        res.status(200).send({ message: 'User updated successfully' });
     })
 })
 
-//DELETE request to delete any user
+//DELETE request to delete user
 app.delete('/api/users/:id', (req, res) => {
-    const userId = req.params.id;
+    const { id } = req.params;
 
-    if (!users[userId]) {
-        return res.status(400).send({ error: "user not found" });
-    }
+    const query = 'DELETE FROM users WHERE id = ?';
 
-    delete users[userId];
-    res.status(200).send({ message: "user deleted successfully" });
+    connection.query(query, [id], (error, results) => {
+        if (error) {
+            return res.status(500).json({ error: 'Database error occurred' });
+        }
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        return res.status(200).json({ message: 'User deleted successfully' });
+    })
 })
 
 // Server listening
