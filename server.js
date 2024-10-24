@@ -1,22 +1,23 @@
 const express = require('express');
+const mysql = require('mysql2');
 const app = express();
 const port = 3000;
+const connection = require('./db');
 
 // Middleware to parse JSON
 app.use(express.json());
 
-let users = {
-    1: { username: "Pratik Bhowmik", designation: "Software QA engineer" },
-    2: { username: "Blessy", designation: "Developer" },
-    3: { username: "Shubham", designation: "Developer" }
-}
-
-// Sample GET API
+// Sample GET API to fetch all the users
 app.get('/api', (req, res) => {
-    res.status(200).send(users);
+    connection.query('SELECT * FROM users', (err, results) => {
+        if (err) {
+            return res.status(500).send({ error: 'Database error' });
+        }
+        res.status(200).send(results);
+    })
 });
 
-// Sample POST API
+// Sample POST API to create new user
 app.post('/api/users', (req, res) => {
     const { username, designation } = req.body;
 
@@ -26,27 +27,16 @@ app.post('/api/users', (req, res) => {
         });
     }
 
-    const isUserExist = Object.values(users).some(user => user.username === username);
-
-    if (isUserExist) {
-        return res.status(409).send({
-            error: "User with this username already exists"
-        })
-    }
-
-    const newID = Object.keys(users).length + 1;
-
-    users[newID] = { id: newID, username, designation };
-
-    res.status(201).send({
-        message: "User created successfully",
-        user: users[newID]
-    });
+    connection.query('INSERT INTO users (id,username,designation) VALUES (5,"Shamik Barman","Product Manager")', [username, designation], (err) => {
+        if (err) {
+            return res.status(500).send({ error: 'Database error' });
+        }
+        res.status(201).send({ message: 'user created successfully' });
+    })
 });
 
-//PUT request
+//PUT request to update any user
 app.put('/api/users/:id', (req, res) => {
-    const userId = req.params.id;
     const { username, designation } = req.body;
 
     if (!users[userId]) {
@@ -71,7 +61,7 @@ app.put('/api/users/:id', (req, res) => {
     })
 })
 
-//DELETE request
+//DELETE request to delete any user
 app.delete('/api/users/:id', (req, res) => {
     const userId = req.params.id;
 
@@ -82,7 +72,6 @@ app.delete('/api/users/:id', (req, res) => {
     delete users[userId];
     res.status(200).send({ message: "user deleted successfully" });
 })
-
 
 // Server listening
 app.listen(port, () => {
